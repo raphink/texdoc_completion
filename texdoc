@@ -1,0 +1,25 @@
+_texdoc() {
+   local cur showall i
+
+   COMPREPLY=()
+   cur=${COMP_WORDS[COMP_CWORD]}
+
+   for (( i=0; i < ${#COMP_WORDS[@]}-1; i++ )); do
+      if [ ${COMP_WORDS[i]} = '-s' ]; then
+         showall=1
+      fi
+   done
+
+   if [[ "$cur" == -* ]]; then
+      COMPREPLY=( $( compgen -W '--help -v -l -s -V -f -w -i -M -q -d' -- $cur ) )
+   elif [[ -n $cur ]]; then
+      if [[ $showall = 1 ]]; then
+         COMPREPLY=( $(compgen -W "$( texdoc -M -s $cur | awk '{print $3}' | xargs -n1 basename | sed -e 's@\.[^\.]\+$@@' | grep ^$cur)") )
+      else
+         COMPREPLY=( $(compgen -W "$( texdoc -M -l $cur | awk '{print $3}' | xargs -n1 basename | sed -e 's@\.[^\.]\+$@@' | grep ^$cur)") )
+      fi
+   fi
+}
+
+have texdoc && complete -F _texdoc texdoc
+
